@@ -1,0 +1,48 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.pytype/
+.ruff_cache/
+.tox/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Local environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Build and package artifacts
+build/
+dist/
+site/
+*.egg-info/
+pip-wheel-metadata/
+
+# Test and coverage reports
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Jupyter temporary files
+.ipynb_checkpoints/
+
+# macOS metadata
+.DS_Store
+
+# IDE and editor files
+.idea/
+
+# Generated experiment output
+evaluation_results.csv
+
+# Logs
+*.log
