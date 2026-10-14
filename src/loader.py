@@ -1,6 +1,7 @@
-
+import hashlib
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import List
 
 from langchain_core.documents import Document
 from langchain_community.document_loaders import (
@@ -34,9 +35,15 @@ class BaseDocumentLoader(ABC):
         if not documents:
             raise ValueError(f"No text extracted from document: {path}")
 
+        document_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+        identity = f"{path.resolve()}:{document_hash}"
+        document_id = hashlib.sha256(
+            identity.encode("utf-8")
+        ).hexdigest()
+
         for document in documents:
             document.metadata["source"] = str(path)
-            document.metadata["document_id"] = path.stem
+            document.metadata["document_id"] = document_hash
             document.metadata["file_type"] = path.suffix.lower().lstrip(".")
 
         return documents
@@ -85,3 +92,33 @@ def load_document(file_path: str | Path) -> list[Document]:
         )
 
     return loader_class().load(path)
+
+
+
+def load_directory(directory_path: str | Path, recursive: bool = True) -> List[Document]:
+    """Load every supported document in a directory"""
+
+    directory = Path(directory_path)
+
+    if not directory.exists():
+        raise FileNotFoundError(f"Directory not found: {directory}")
+    
+    if not directory.is_dir():
+        raise ValueError(f"Expected a directory: {directory}")
+    
+    iterator = directory.rglob("*") if recursive else directory.iterdir()
+
+    supported_extensions = {".pdf", ".docx"}
+    file_paths = sorted(
+        path 
+        for path in iterator
+        if path.is_file() 
+        and path.suffix.lower() in supported_extensions
+    )
+
+    documents = []
+
+    for path in file_paths:
+        documents.extend(load_document(path))
+    
+    return documents
