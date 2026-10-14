@@ -1,6 +1,4 @@
-# rag_project
-RAG project
-
+# End to end - Complete RAG Project
 
 
 What the manifest guarantees
@@ -35,3 +33,26 @@ Update src/vector_store.py to add persistence while retaining your existing add(
 3. Use only trusted index files when loading FAISS indexes. The JSON metadata file should also be validated before it is used.
 4. Your existing DocumentRetriever should continue to call search() as before. Run your tests after replacing the implementation to catch any differences in the current integration.
 Once persistence and rebuild behavior are verified, we can connect IngestionManifest to this lifecycle and ensure a document is marked indexed only after the new index snapshot is saved successfully.
+
+
+We’ll continue with the next milestone: **integrating persistent FAISS storage with the SQLite ingestion manifest.**
+The key reliability rule is that the manifest must never report a document as indexed before its corresponding vector index has been saved successfully. For this first implementation, we’ll use a safe **full-rebuild strategy** whenever a document changes. This avoids duplicate or stale vectors; incremental updates can come later.
+
+**Milestone: Persistent ingestion pipeline**
+
+The pipeline will support these scenarios:
+
+1. First run: load documents, create chunks and embeddings, save the FAISS index, then mark ingestion as complete.
+2. Restart with unchanged documents: load the saved index and skip unnecessary embedding work.
+3. Changed or added document: rebuild the index from the current document collection, then update the manifest.
+4. Failed ingestion: record the failure and leave the system able to retry.
+
+#### 1. Update the manifest
+
+Add these methods to *src/ingestion_manifest.py*. They let the ingestion service detect deleted files and remove their manifest entries after a successful rebuild.
+
+#### 2. Create *src/ingestion_service.py*
+
+This class coordinates loading, hashing, chunking, embedding, persistence, and manifest updates. It assumes the loader, chunker, embedding service, and persistent FAISSVectorStore from the previous milestones are available.
+
+**Important:** this version uses a versioned snapshot directory and an atomically replaced CURRENT pointer, so the previous active snapshot remains available if building a new one fails before activation. It does not yet implement concurrent-writer locking or automatic cleanup of old snapshots; those are production hardening tasks.

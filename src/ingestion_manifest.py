@@ -133,3 +133,23 @@ class IngestionManifest:
                 raise KeyError(
                     f"No ingestion record found for {normalized_path}"
                 )
+
+def list_all(self) -> list[dict]:
+    """Return all tracked source files."""
+    with self._connect() as connection:
+        rows = connection.execute(
+            "SELECT * FROM ingestion_manifest ORDER BY source_path"
+        ).fetchall()
+
+    return [dict(row) for row in rows]
+
+
+def remove_source(self, source_path: str) -> None:
+    """Remove a source from the manifest after it is removed from the index."""
+    normalized_path = str(Path(source_path).resolve())
+
+    with self._connect() as connection:
+        connection.execute(
+            "DELETE FROM ingestion_manifest WHERE source_path = ?",
+            (normalized_path,),
+        )
