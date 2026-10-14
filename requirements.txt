@@ -4,3 +4,4 @@ langchain
 langgraph
 langchain-core
 langchain-community
+pytest
