@@ -11,8 +11,13 @@ class EmbeddingService:
     def __init__(self, 
                  model_name: str = os.environ.get("EMBEDDING_MODEL"), 
                  base_url: str = os.environ.get("BASE_URL"), 
-                 api_key: str = os.environ.get("OPENAI_API_KEY")) -> None:
-        self.model = OpenAIEmbeddings(model=model_name, base_url=base_url, api_key=api_key)
+                 api_key: str = os.environ.get("OPENAI_API_KEY")
+                ) -> None:
+        self.model = OpenAIEmbeddings(
+                                        model=model_name, 
+                                        base_url=base_url, 
+                                        api_key=api_key
+                                    )
 
     def embed_documents(
             self, texts: list[str]

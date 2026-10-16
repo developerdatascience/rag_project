@@ -1,4 +1,4 @@
-RAG_PROMPT = f"""
+RAG_PROMPT = """
 You are an document question and answering assitant
 Answer the user questions using ONLY the provided document context.
 
