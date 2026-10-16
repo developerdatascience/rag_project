@@ -152,7 +152,10 @@ Our tuning process will compare:
 We’ll use a measured score rather than automatically choosing the largest top_k. Returning more chunks can improve recall while also introducing irrelevant context and increasing LLM costs.
 
 ### 3. Add an evaluation-driven configuration selector
-Create *evaluation/select_best_config.py.* It reads your experiment results, ranks candidate configurations, and saves the winning settings to *data/retrieval_config.json*.
-For the initial version, we’ll use this transparent scoring formula:\n
-**score = 0.7 X F1 + 0.3 X hit_rate**
-\nThis is a tunable engineering choice, not a universal RAG standard. It balances retrieval precision/recall with the chance of retrieving at least one relevant chunk.
+Create `evaluation/select_best_config.py`. It reads your experiment results, ranks the candidate configurations, and saves the winning settings to `data/retrieval_config.json`.
+
+For the initial version, the selector will use this transparent scoring formula:
+
+> **Score = 0.7 × F1 + 0.3 × hit rate**
+
+This is a tunable engineering choice, not a universal RAG standard. It balances retrieval precision and recall with the chance of retrieving at least one relevant chunk.
