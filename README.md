@@ -88,17 +88,71 @@ The key reliability rule is that the manifest must never report a document as in
 
 The pipeline will support these scenarios:
 
-1. First run: load documents, create chunks and embeddings, save the FAISS index, then mark ingestion as complete.
-2. Restart with unchanged documents: load the saved index and skip unnecessary embedding work.
-3. Changed or added document: rebuild the index from the current document collection, then update the manifest.
-4. Failed ingestion: record the failure and leave the system able to retry.
+**1. First run:** load documents, create chunks and embeddings, save the FAISS index, then mark ingestion as complete.
+**2. Restart with unchanged documents:** load the saved index and skip unnecessary embedding work.
+**3. Changed or added document:** rebuild the index from the current document collection, then update the manifest.
+**4. Failed ingestion:** record the failure and leave the system able to retry.
 
 #### 1. Update the manifest
 
 Add these methods to *src/ingestion_manifest.py*. They let the ingestion service detect deleted files and remove their manifest entries after a successful rebuild.
+
+
 
 #### 2. Create *src/ingestion_service.py*
 
 This class coordinates loading, hashing, chunking, embedding, persistence, and manifest updates. It assumes the loader, chunker, embedding service, and persistent FAISSVectorStore from the previous milestones are available.
 
 **Important:** this version uses a versioned snapshot directory and an atomically replaced CURRENT pointer, so the previous active snapshot remains available if building a new one fails before activation. It does not yet implement concurrent-writer locking or automatic cleanup of old snapshots; those are production hardening tasks.
+
+**Scenario A — First ingestion**
+Expected behavior:
+- PDF and DOCX files are discovered.
+- Documents are chunked and embedded.
+- A versioned FAISS snapshot is saved.
+- The CURRENT pointer is updated.
+- Manifest records are marked indexed.
+
+The output should report status: rebuilt.
+
+**Scenario B — Restart without changing files**
+Stop the process and run the script again.
+Expected behavior:
+- The existing snapshot is loaded.
+- No new document embeddings are generated.
+- The output reports status: unchanged.
+The important distinction is that **query embeddings are still generated for searches.** Skipping ingestion embeddings does not mean skipping query embeddings.
+
+**Scenario C — Modify or add a document**
+Edit a document under data/documents/, save it, and run the script again.
+
+Expected behavior:
+- The changed file is detected through its content hash.
+- The complete current corpus is re-indexed into a new snapshot.
+- The new snapshot becomes active only after it has been saved.
+- Deleted files are removed from the manifest after the rebuild succeeds.
+
+If any scenario behaves differently, inspect the manifest at data/ingestion_manifest.db and the snapshots under data/faiss_snapshots/.
+
+**6. Two important limitations to address next**
+
+**1. Concurrent ingestion:** two processes could attempt to update the active snapshot simultaneously. Add a locking mechanism before running ingestion concurrently in production.
+**2. Recovery and consistency:** if activation succeeds but the manifest update fails, the next run may rebuild unnecessarily. This is safe for the current approach, but a transactional ingestion journal and recovery procedure would make the workflow more robust.
+
+Also, FAISS uses squared L2 distance in this implementation, so a smaller distance means a closer vector. Do not interpret the distance directly as a probability or percentage of relevance.
+
+### 2. Next milestone — adaptive retrieval
+Now we’ll move from **storing and reusing vectors** to choosing retrieval settings based on measured quality.
+One important caveat: your latest index contains only one file and three chunks. Your earlier DOM-document evaluation results should not be used to tune this new corpus unless you restore that document and rerun the experiments. A three-chunk document is useful for testing persistence, but too small to establish reliable retrieval settings.
+Our tuning process will compare:
+- chunk_size: how much text each chunk contains.
+- chunk_overlap: how much text neighboring chunks share.
+- top_k: how many chunks are retrieved for each question.
+- F1 and hit_rate: measures used to compare retrieval quality.
+We’ll use a measured score rather than automatically choosing the largest top_k. Returning more chunks can improve recall while also introducing irrelevant context and increasing LLM costs.
+
+### 3. Add an evaluation-driven configuration selector
+Create *evaluation/select_best_config.py.* It reads your experiment results, ranks candidate configurations, and saves the winning settings to *data/retrieval_config.json*.
+For the initial version, we’ll use this transparent scoring formula:
+**score = 0.7 X F1 + 0.3 X hit_rate**
+This is a tunable engineering choice, not a universal RAG standard. It balances retrieval precision/recall with the chance of retrieving at least one relevant chunk.

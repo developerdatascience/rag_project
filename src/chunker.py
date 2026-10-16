@@ -1,9 +1,7 @@
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from typing import List
-from collections import defaultdict
 import hashlib
-from pathlib import Path
+from collections import defaultdict
 
 class DocumentChunker:
     """Splits the docunments into smaller, overlapping chunks"""
@@ -28,27 +26,32 @@ class DocumentChunker:
     def split(self, documents: list[Document]) -> list[Document]:
         """Split documents and attach traceable metadata to each chunk."""
         if not documents:
-            raise ValueError("Cannot chunk an empty document list")
-        
-        documents_by_id = defaultdict(list)
+            return []
 
         for document in documents:
-            document_id = document.metadata("document_id")
-
-            if not document_id:
-                raise ValueError()
+            if not document.metadata.get("document_id"):
+                raise ValueError("Each document must have a document_id in its metadata")
 
         chunks = self.splitter.split_documents(documents)
 
         if not chunks:
             raise ValueError("Chunking produced no chunks")
 
-        for index, chunk in enumerate(chunks):
-            source = chunk.metadata.get("source", "unknown")
-            chunk.metadata["document_id"] = Path(source).stem if source != "unknown" else "unknown"
+        config_id = hashlib.sha256(
+            f"{self.chunk_size}:{self.chunk_overlap}".encode("utf-8")
+        ).hexdigest()[:12]
+        chunk_indexes: defaultdict[str, int] = defaultdict(int)
+
+        for chunk in chunks:
+            document_id = chunk.metadata["document_id"]
+            index = chunk_indexes[document_id]
+            chunk_indexes[document_id] += 1
             chunk.metadata["chunk_index"] = index
+            chunk.metadata["content_hash"] = hashlib.sha256(
+                chunk.page_content.encode("utf-8")
+            ).hexdigest()
             chunk.metadata["chunk_id"] = (
-                f"{chunk.metadata['document_id']}_chunk_{index}"
+                f"{document_id}_{config_id}_chunk_{index}"
             )
 
         return chunks
