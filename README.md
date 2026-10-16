@@ -28,6 +28,7 @@ rag-project/
 │   ├── rag.py
 │   ├── retriever.py
 │   └── vector_store.py
+│   └── grounded_answerer.py
 ├── tests/
 │   ├── test_chunker.py
 │   ├── test_ingestion_manifest.py
@@ -281,4 +282,29 @@ python evaluation/select_best_config.py
 
 ***4. Connect the selected configuration to ingestion**
 Update *run_ingestion.py* so it reads the selected settings rather than hardcoding 1200/150.
+
+#### ***5. What we’ll do after this**
+The next step is to make the tuning process trustworthy:
+1. Validate the evaluation dataset and its relevance labels.
+2. Run experiments for a defined set of chunking configurations and top_k values.
+3. Select the best configuration and save the evaluation evidence.
+4. Add a retrieval-quality threshold so poor matches can be rejected instead of always returning the nearest chunks.
+5. Connect retrieval to the answer generator, with source citations and a clear response when the evidence is insufficient.
+
+The third item above is not complete until the selector has been run on fresh, representative evaluation results.
+
+***Your next action:*** check whether evaluation_results.csv corresponds to your current document. If it does not, rerun the experiments before generating data/retrieval_config.json.
+
+
+We’ll continue with the next important production-RAG milestone: ***retrieval quality control and grounded answer generation.***
+
+Your persistence tests have passed for document changes and unchanged-document reuse. Before trusting the adaptive configuration, we should ensure that the RAG system can distinguish between:
+- A question that the indexed documents can answer.
+- A question for which the retrieved chunks are weak or irrelevant.
+- A question that needs more context than the current retrieval results provide.
+
+A nearest-neighbor search always returns the closest available vectors when the index is non-empty. That does not guarantee that the results are relevant. We’ll introduce a relevance threshold, then connect retrieval to your existing answer generator while retaining source metadata.
+
+*** ##### 1. Make the relevance threshold configurable***
+Update *src/ingestion_service.py* so the search method accepts a threshold. Replace its existing search() method with this version:
 
