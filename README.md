@@ -276,3 +276,8 @@ Run the selector from the project root with:
 ```bash
 python evaluation/select_best_config.py
 
+
+
+***4. Connect the selected configuration to ingestion**
+Update *run_ingestion.py* so it reads the selected settings rather than hardcoding 1200/150.
+

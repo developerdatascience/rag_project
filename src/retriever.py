@@ -18,7 +18,7 @@ class DocumentRetriever:
         query_embedding = (
             self.embedding_service.embed_query(question)
             )
-        return self.vector_store.search(query_embeddings=query_embedding, 
+        return self.vector_store.search(query_embedding=query_embedding, 
                                         top_k=top_k, 
                                         distance_threshold=distance_threshold,
                                         metadata_filter=metadata_filter
