@@ -1,32 +1,50 @@
 # End to end - Complete RAG Project
 
-Finalize the project structure
+## Project structure
 
+```text
 rag-project/
 ├── data/
 │   └── documents/
 │       └── understanding-the-dom.pdf
+├── evaluation/
+│   ├── config.py
+│   ├── experiment.py
+│   ├── metrics.py
+│   ├── results.py
+│   └── retrieval_dataset.py
+├── notebooks/
+│   ├── experiment_1.ipynb
+│   ├── experiment_2.ipynb
+│   └── loader.ipynb
 ├── src/
-│   ├── loader.py
 │   ├── chunker.py
 │   ├── embeddings.py
-│   ├── vector_store.py
-│   ├── retriever.py
 │   ├── generator.py
-│   └── rag.py
-├── evaluation/
-│   ├── __init__.py
-│   ├── retrieval_dataset.py
-│   ├── metrics.py
-│   ├── config.py
-│   ├── results.py
-│   └── experiment.py
+│   ├── ingestion_manifest.py
+│   ├── ingestion_service.py
+│   ├── loader.py
+│   ├── prompt.py
+│   ├── rag.py
+│   ├── retriever.py
+│   └── vector_store.py
 ├── tests/
-├── main.py
+│   ├── test_chunker.py
+│   ├── test_ingestion_manifest.py
+│   ├── test_loader.py
+│   └── test_metrics.py
+├── .gitignore
+├── LICENSE
+├── README.md
+├── evaluate_retrieval.py
 ├── inspect_chunks.py
-├── run_experiments.py
+├── inspect_retrieval.py
+├── main.py
+├── pytest.ini
 ├── requirements.txt
-└── .env
+├── run_experiment.py
+└── run_ingestion.py
+```
 
 
 What the manifest guarantees
