@@ -154,8 +154,8 @@ We’ll use a measured score rather than automatically choosing the largest top_
 ### 3. Add an evaluation-driven configuration selector
 Create `evaluation/select_best_config.py`. It reads your experiment results, ranks the candidate configurations, and saves the winning settings to `data/retrieval_config.json`.
 
-For the initial version, the selector will use this transparent scoring formula:
+For the initial version, the selector will use this transparent scoring formula:<br></br>
 
-> **Score = 0.7 × F1 + 0.3 × hit rate**
+> **Score = 0.7 × F1 + 0.3 × hit rate**<br></br>
 
 This is a tunable engineering choice, not a universal RAG standard. It balances retrieval precision and recall with the chance of retrieving at least one relevant chunk.
