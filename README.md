@@ -1,5 +1,33 @@
 # End to end - Complete RAG Project
 
+Finalize the project structure
+
+rag-project/
+├── data/
+│   └── documents/
+│       └── understanding-the-dom.pdf
+├── src/
+│   ├── loader.py
+│   ├── chunker.py
+│   ├── embeddings.py
+│   ├── vector_store.py
+│   ├── retriever.py
+│   ├── generator.py
+│   └── rag.py
+├── evaluation/
+│   ├── __init__.py
+│   ├── retrieval_dataset.py
+│   ├── metrics.py
+│   ├── config.py
+│   ├── results.py
+│   └── experiment.py
+├── tests/
+├── main.py
+├── inspect_chunks.py
+├── run_experiments.py
+├── requirements.txt
+└── .env
+
 
 What the manifest guarantees
 - It identifies whether the file contents or chunking configuration changed.
