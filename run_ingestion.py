@@ -31,7 +31,8 @@ def main():
     for key, value in result.items():
         print(f"{key}: {value}")
 
-    top_k = config["top_k"]
+    top_k = config.get("top_k", 3)
+    distance_threshold = config.get("distance_threshold")
 
     while True:
         question = input("\nAsk a question (or type 'exit'): ").strip()
@@ -42,18 +43,26 @@ def main():
         if not question:
             continue
 
-        results = service.search(question, top_k=top_k)
+        try:
+            result = service.answer_question(
+                question=question,
+                top_k=top_k,
+                distance_threshold=distance_threshold
+            )
 
-        if not results:
-            print("No relevant chunks found.")
-            continue
+            print("\nAnswer")
+            print("-"*40)
+            print(result["answer"])
 
-        for rank, (document, distance) in enumerate(results, start=1):
-            print(f"\nResult {rank}")
-            print(f"Source: {document.metadata.get('source', 'Unknown')}")
-            print(f"Page: {document.metadata.get('page', 'Unknown')}")
-            print(f"L2 distance: {distance:.4f}")
-            print(document.page_content[:1000])
+            print("\nRetrieved sources")
+            for source in result["sources"]:
+                print(
+                    f"- {source['source']}, "
+                    f"page={source['page']}, "
+                    f"distance={source['distance']}"
+                )
+        except Exception as exc:
+            print(f"Unable to answer this question: {exc}")
 
 
 if __name__ == "__main__":

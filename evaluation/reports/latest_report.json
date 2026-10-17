@@ -1,0 +1,114 @@
+{
+  "created_at": "2026-10-17T15:19:55.782195+00:00",
+  "top_k": 3,
+  "cases": [
+    {
+      "id": "javascript_alert",
+      "question": "How to use Alert using javascript in HTML",
+      "answerability": "supported",
+      "evaluation_status": "PASS_EVIDENCE",
+      "top_k": 3,
+      "required_evidence": [
+        "alert('Will I alert?')",
+        "button.addEventListener('click', alertText);"
+      ],
+      "matched_evidence": [
+        "alert('Will I alert?')",
+        "button.addEventListener('click', alertText);"
+      ],
+      "evidence_coverage": 1.0,
+      "answer": "To use an alert in JavaScript within an HTML document, you can define a function that calls the `alert()` method and then attach that function to an event, such as a button click. Here’s an example based on the retrieved context:\n\n1. Create an HTML structure with a button and a paragraph:\n   ```html\n   <!DOCTYPE html>\n   <html lang=\"en-US\">\n   <head>\n       <title>Events</title>\n   </head>\n   <body>\n       <button onclick=\"alertText()\">Click me</button>\n       <p>Try to change me.</p>\n   </body>\n   <script src=\"js/events.js\"></script>\n   </html>\n   ```\n\n2. In your JavaScript file (events.js), define the alert function:\n   ```javascript\n   const alertText = () => {\n       alert('Will I alert?');\n   }\n   ```\n\n3. When the button is clicked, the `alertText` function will be executed, displaying the alert message [Source 1].",
+      "sources": [
+        {
+          "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
+          "page": 115,
+          "distance": 0.8929667472839355,
+          "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_118",
+          "content": "js/events.js\nconst p = document.querySelector('p');\nconst button = document.querySelector('button');\nconst changeText = () => {\n    p.textContent = \"Will I change?\";\n}\nconst alertText = () => {\n    alert('Will I alert?');\n}\n// Multiple listeners can be added to the same \nevent and element\nbutton.addEventListener('click', changeText);\nbutton.addEventListener('click', alertText);\nIn this example, both events will fire, providing the user with both an\nalert and modified text once clicking out of the alert.\nOften, anonymous functions will be used instead of a function reference\non an event listener. Anonymous functions are functions that are not\nnamed."
+        },
+        {
+          "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
+          "page": 121,
+          "distance": 0.9430164098739624,
+          "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_125",
+          "content": "event-test-p.html\n<!DOCTYPE html>\n<html lang=\"en-US\">\n<head>\n    <title>Events</title>\n</head>\n<body>\n  <p></p>\n</body>\n</html>\nThen, type the following JavaScript code into your browser’s Developer\nConsole."
+        },
+        {
+          "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
+          "page": 105,
+          "distance": 1.0045051574707031,
+          "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_108",
+          "content": "events.html\n<!DOCTYPE html>\n<html lang=\"en-US\">\n<head>\n    <title>Events</title>\n</head>\n<body>\n    <button onclick=\"changeText()\">Click \nme</button>\n    <p>Try to change me.</p>\n</body>\n<script src=\"js/events.js\"></script>\n</html>\nLet’s create our events.js file, which we placed in the js/ directory\nhere. Within it, we will create the changeText() function, which will\nmodify the textContent of the p element."
+        }
+      ]
+    },
+    {
+      "id": "javascript_api_fetch",
+      "question": "How to extract a data from an api using js?",
+      "answerability": "pending_review",
+      "evaluation_status": "NEEDS_ANNOTATION",
+      "top_k": 3,
+      "required_evidence": [],
+      "matched_evidence": [],
+      "evidence_coverage": null,
+      "answer": "The retrieved context does not contain specific information on how to extract data from an API using JavaScript. Therefore, I cannot provide an answer based on the supplied document context.",
+      "sources": [
+        {
+          "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
+          "page": 45,
+          "distance": 1.1538571119308472,
+          "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_46",
+          "content": "access.js"
+        },
+        {
+          "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
+          "page": 6,
+          "distance": 1.2517035007476807,
+          "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_4",
+          "content": "Introduction\nAbout this Book\nJavaScript is the de facto programming language of the web, but the\nlanguage itself does not include any built-in method for working with\ninput/output (I/O), such as graphics display and sound. Instead, the web\nbrowser provides an API for accessing the HTML document in a tree\nstructure known as the Document Object Model (DOM). The combination\nof JavaScript and the DOM is what allows us to create interactive,\ndynamic websites.\nMany modern frameworks, such as React, Vue, and Svelte abstract away\nmuch of the DOM from the developer, but frameworks also use the DOM\nunder the hood. The JavaScript library jQuery was also created to make\nworking with the DOM easier, but the modern development practice is to\nwork with the DOM directly. In order to be a proficient web developer,\nhaving a deep understanding of what the DOM is and how to work with it\nis essential. The goal of this book is to provide a base understanding of the\nDOM, as well as explore examples of the most common and useful\nmethods for interacting with the DOM.\nThis book is based on the Understanding the DOM tutorial series found\non the DigitalOcean Community. The topics that it covers include:"
+        },
+        {
+          "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
+          "page": 44,
+          "distance": 1.2613605260849,
+          "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_45",
+          "content": "operator, and querySelectorAll('div, article') will match\nall div and article values in the document.\nUsing the query selector methods is extremely powerful, as you can\naccess any element or group of elements in the DOM the same way you\nwould in a CSS file. For a complete list of selectors, review CSS Selectors\non the Mozilla Developer Network.\nComplete JavaScript Code\nBelow is the complete script of the work we did above. You can use it to\naccess all the elements on our example page. Save the file as access.js\nand load it in to the HTML file right before the closing body tag."
+        }
+      ]
+    },
+    {
+      "id": "india_capital",
+      "question": "What is the capital of India?",
+      "answerability": "pending_review",
+      "evaluation_status": "NEEDS_ANNOTATION",
+      "top_k": 3,
+      "required_evidence": [],
+      "matched_evidence": [],
+      "evidence_coverage": null,
+      "answer": "The retrieved context does not contain any information about the capital of India.",
+      "sources": [
+        {
+          "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
+          "page": 118,
+          "distance": 1.7862846851348877,
+          "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_122",
+          "content": "key, and code.\nFor example, if the user presses the letter a key on their keyboard, the\nfollowing properties pertaining to that key will surface:"
+        },
+        {
+          "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
+          "page": 5,
+          "distance": 1.7935878038406372,
+          "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_3",
+          "content": "About DigitalOcean\nDigitalOcean is a cloud services platform delivering the simplicity\ndevelopers love and businesses trust to run production applications at\nscale. It provides highly available, secure and scalable compute, storage\nand networking solutions that help developers build great software faster.\nFounded in 2012 with offices in New York and Cambridge, MA,\nDigitalOcean offers transparent and affordable pricing, an elegant user\ninterface, and one of the largest libraries of open source resources\navailable. For more information, please visit\nhttps://www.digitalocean.com or follow @digitalocean on Twitter."
+        },
+        {
+          "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
+          "page": 94,
+          "distance": 1.831446647644043,
+          "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_96",
+          "content": "The className property was introduced to prevent conflicts with the\nclass keyword found in JavaScript and other languages that have access to\nthe DOM. You can use className to assign a value directly to the class.\n// Select the first div\nconst div = document.querySelector('div');\n// Assign the warning class to the first div\ndiv.className = 'warning';\nWe have assigned the warning class defined in the CSS values of\nclasses.html to the first div. You’ll receive the following output:\nSecond rendering of classes.html"
+        }
+      ]
+    }
+  ]
+}

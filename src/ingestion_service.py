@@ -1,4 +1,10 @@
-
+"""
+Your FAISSVectorStore.search() implementation already supports distance_threshold according to the 
+earlier project code. It compares the returned distance against the threshold and excludes results above it.
+Important: FAISS IndexFlatL2 returns squared L2 distances. A threshold suitable for one embedding model 
+or dataset may not work well for another. We'll calibrate the threshold using labeled evaluation questions 
+rather than inventing a universal value
+"""
 import hashlib
 import json
 import os
@@ -10,6 +16,7 @@ from src.embeddings import EmbeddingService
 from src.ingestion_manifest import IngestionManifest
 from src.loader import load_document
 from src.vector_store import FAISSVectorStore
+from src.grounded_answerer import GroundedAnswerGenerator
 
 
 class IngestionService:
@@ -42,6 +49,7 @@ class IngestionService:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.vector_store = FAISSVectorStore()
+        self.answer_generator = GroundedAnswerGenerator()
 
     @staticmethod
     def _file_hash(path: Path) -> str:
@@ -241,8 +249,18 @@ class IngestionService:
                     pass
             raise
 
-    def search(self, question: str, top_k: int = 3):
-        """Search the currently loaded persisted index."""
+    def search(self, question: str, top_k: int = 3, distance_threshold: float | None = None):
+        """Search the presisted index, optionally filter by L2 distance."""
+        
+        if not question or not question.strip():
+            raise ValueError("Question cannot be empty")
+
+        if top_k <= 0:
+            raise ValueError("top_k must be greater than zero.")
+
+        if distance_threshold is not None and distance_threshold < 0:
+            raise ValueError("distance_threshold cannot be negative")
+        
         if self.vector_store.index is None:
             if not self._load_active_snapshot():
                 raise RuntimeError(
@@ -255,3 +273,36 @@ class IngestionService:
             query_embedding=query_embedding,
             top_k=top_k,
         )
+
+    def answer_question(self, 
+                        question: str, 
+                        top_k: int = 3, 
+                        distance_threshold: float| None= None,
+                        answer_mode: str = "strict"
+                        ) ->dict:
+        results = self.search(
+            question=question,
+            top_k = top_k,
+            distance_threshold=distance_threshold
+        )
+
+        answer = self.answer_generator.generate(question=question, results=results, answer_mode=answer_mode)
+
+        sources = []
+        for rank, (document, distance) in enumerate(results, start=1):
+            page = document.metadata.get("page")
+
+            sources.append({
+                "rank": rank,
+                "source": document.metadata.get("source" ,"unknown source"),
+                "page": int(page) + 1 if isinstance(page, int) else None,
+                "distance": round(float(distance), 4),
+                "chunk_id": document.metadata.get("chunk_id")
+            })
+
+            return {
+                "question": question,
+                "answer": answer,
+                "retrieved_chunks": len(results),
+                "sources": sources
+            }
