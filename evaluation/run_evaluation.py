@@ -6,6 +6,8 @@ from pathlib import Path
 from evaluation.qa_dataset import EVALUATION_CASES
 from src.ingestion_service import IngestionService
 
+from evaluation.answer_metrics import evaluate_answer
+
 
 OUTPUT_DIR = Path("evaluation/reports")
 VALID_ANSWERABILITY = {"supported", "unsupported", "pending_review"}
@@ -110,6 +112,11 @@ def evaluate_case(service, case, top_k=3):
     else:
         answer = str(answer_result)
 
+    answer_metrics = evaluate_answer(
+        answer=answer,
+        answerability=answerability,
+    )
+
     return {
         "id": case_id,
         "question": question,
@@ -120,8 +127,10 @@ def evaluate_case(service, case, top_k=3):
         "matched_evidence": matched_evidence,
         "evidence_coverage": evidence_coverage,
         "answer": answer,
+        "answer_metrics": answer_metrics,
         "sources": sources,
     }
+
 
 
 def main():
@@ -157,6 +166,24 @@ def main():
         print("\nGenerated answer:")
         print(result["answer"])
 
+        print("\nAnswer metrics:")
+        print(
+            "Citation present:",
+            result["answer_metrics"]["citation_present"],
+        )
+        print(
+            "Abstention detected:",
+            result["answer_metrics"]["abstention_detected"],
+        )
+        print(
+            "Abstention correct:",
+            result["answer_metrics"]["abstention_correct"],
+        )
+        print(
+            "Manual answer review required:",
+            result["answer_metrics"]["answer_review_required"],
+        )
+
         print("\nRetrieved sources:")
         for index, source in enumerate(result["sources"], start=1):
             print(
@@ -174,7 +201,6 @@ def main():
 
     print("\n" + "=" * 80)
     print(f"Report saved to: {report_path}")
-
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-10-17T15:19:55.782195+00:00",
+  "created_at": "2026-10-17T15:32:44.278642+00:00",
   "top_k": 3,
   "cases": [
     {
@@ -17,7 +17,13 @@
         "button.addEventListener('click', alertText);"
       ],
       "evidence_coverage": 1.0,
-      "answer": "To use an alert in JavaScript within an HTML document, you can define a function that calls the `alert()` method and then attach that function to an event, such as a button click. Here’s an example based on the retrieved context:\n\n1. Create an HTML structure with a button and a paragraph:\n   ```html\n   <!DOCTYPE html>\n   <html lang=\"en-US\">\n   <head>\n       <title>Events</title>\n   </head>\n   <body>\n       <button onclick=\"alertText()\">Click me</button>\n       <p>Try to change me.</p>\n   </body>\n   <script src=\"js/events.js\"></script>\n   </html>\n   ```\n\n2. In your JavaScript file (events.js), define the alert function:\n   ```javascript\n   const alertText = () => {\n       alert('Will I alert?');\n   }\n   ```\n\n3. When the button is clicked, the `alertText` function will be executed, displaying the alert message [Source 1].",
+      "answer": "To use an alert in JavaScript within an HTML document, you can define a function that calls the `alert()` method and then attach that function to an event, such as a button click. Here’s an example based on the retrieved context:\n\n1. Create an HTML structure with a button and a paragraph:\n   ```html\n   <!DOCTYPE html>\n   <html lang=\"en-US\">\n   <head>\n       <title>Events</title>\n   </head>\n   <body>\n       <button onclick=\"alertText()\">Click me</button>\n       <p>Try to change me.</p>\n   </body>\n   <script src=\"js/events.js\"></script>\n   </html>\n   ```\n\n2. In your JavaScript file (events.js), define the `alertText` function:\n   ```javascript\n   const alertText = () => {\n       alert('Will I alert?');\n   }\n   ```\n\nWhen the button is clicked, the `alertText` function will be executed, displaying an alert with the message \"Will I alert?\" [Source 1].",
+      "answer_metrics": {
+        "citation_present": true,
+        "abstention_detected": false,
+        "abstention_correct": null,
+        "answer_review_required": true
+      },
       "sources": [
         {
           "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
@@ -51,7 +57,13 @@
       "required_evidence": [],
       "matched_evidence": [],
       "evidence_coverage": null,
-      "answer": "The retrieved context does not contain specific information on how to extract data from an API using JavaScript. Therefore, I cannot provide an answer based on the supplied document context.",
+      "answer": "The retrieved context does not contain specific information on how to extract data from an API using JavaScript. Therefore, I cannot provide an answer based on the supplied document.",
+      "answer_metrics": {
+        "citation_present": false,
+        "abstention_detected": false,
+        "abstention_correct": null,
+        "answer_review_required": true
+      },
       "sources": [
         {
           "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
@@ -86,25 +98,31 @@
       "matched_evidence": [],
       "evidence_coverage": null,
       "answer": "The retrieved context does not contain any information about the capital of India.",
+      "answer_metrics": {
+        "citation_present": false,
+        "abstention_detected": false,
+        "abstention_correct": null,
+        "answer_review_required": true
+      },
       "sources": [
         {
           "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
           "page": 118,
-          "distance": 1.7862846851348877,
+          "distance": 1.786278486251831,
           "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_122",
           "content": "key, and code.\nFor example, if the user presses the letter a key on their keyboard, the\nfollowing properties pertaining to that key will surface:"
         },
         {
           "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
           "page": 5,
-          "distance": 1.7935878038406372,
+          "distance": 1.7936280965805054,
           "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_3",
           "content": "About DigitalOcean\nDigitalOcean is a cloud services platform delivering the simplicity\ndevelopers love and businesses trust to run production applications at\nscale. It provides highly available, secure and scalable compute, storage\nand networking solutions that help developers build great software faster.\nFounded in 2012 with offices in New York and Cambridge, MA,\nDigitalOcean offers transparent and affordable pricing, an elegant user\ninterface, and one of the largest libraries of open source resources\navailable. For more information, please visit\nhttps://www.digitalocean.com or follow @digitalocean on Twitter."
         },
         {
           "source": "/Users/harendrakumar/Documents/pythonProjects/rag_project/data/documents/understanding-the-dom.pdf",
           "page": 94,
-          "distance": 1.831446647644043,
+          "distance": 1.8314143419265747,
           "chunk_id": "d6f543e8b105d341b0eabb56d5c19b67fc5d7e8d021f3427c783769e4286d7a8_91e5fefd139f_chunk_96",
           "content": "The className property was introduced to prevent conflicts with the\nclass keyword found in JavaScript and other languages that have access to\nthe DOM. You can use className to assign a value directly to the class.\n// Select the first div\nconst div = document.querySelector('div');\n// Assign the warning class to the first div\ndiv.className = 'warning';\nWe have assigned the warning class defined in the CSS values of\nclasses.html to the first div. You’ll receive the following output:\nSecond rendering of classes.html"
         }
