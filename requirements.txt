@@ -11,3 +11,7 @@ pypdf
 faiss-cpu
 numpy
 python-dotenv
+tenacity
+fastapi
+uvicorn[standard]
+httpx

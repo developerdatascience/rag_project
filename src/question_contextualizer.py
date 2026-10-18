@@ -1,5 +1,10 @@
 
+import os
+
+from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+
+load_dotenv()
 
 
 class QuestionContextualizer:
@@ -8,6 +13,8 @@ class QuestionContextualizer:
     def __init__(self, model_name: str = "gpt-4o-mini"):
         self.llm = ChatOpenAI(
             model=model_name,
+            base_url=os.getenv("BASE_URL"),
+            api_key=os.getenv("OPENAI_API_KEY"),
             temperature=0,
         )
 
