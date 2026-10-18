@@ -27,4 +27,6 @@ def test_evaluate_case_computes_metrics_after_generating_answer():
 
     assert result["answer"] == "The feature is documented. [Source 1]"
     assert result["answer_metrics"]["citation_present"] is True
+    assert result["citation_metrics"]["valid_citation_ids"] == [1]
+    assert result["citation_metrics"]["all_citations_valid"] is True
     assert result["answer_metrics"]["abstention_detected"] is False

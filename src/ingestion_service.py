@@ -17,17 +17,25 @@ from src.ingestion_manifest import IngestionManifest
 from src.loader import load_document
 from src.vector_store import FAISSVectorStore
 from src.grounded_answerer import GroundedAnswerGenerator
-
+from src.retrieval_config import load_retrieval_config
+from src.guardrails import InputGuardrails
 
 class IngestionService:
     SUPPORTED_EXTENSIONS = {".pdf", ".docx"}
 
     def __init__(
         self,
-        chunk_size: int = 1200,
-        chunk_overlap: int = 150,
+        chunk_size: int | None = None,
+        chunk_overlap: int | None = None,
         data_dir: str = "data",
     ):
+        config = load_retrieval_config()
+        chunk_size = config["chunk_size"] if chunk_size is None else chunk_size
+        chunk_overlap = (
+            config["chunk_overlap"] if chunk_overlap is None else chunk_overlap
+        )
+        self.default_top_k = config["top_k"]
+
         self.data_dir = Path(data_dir)
         self.documents_dir = self.data_dir / "documents"
         self.snapshots_dir = self.data_dir / "faiss_snapshots"
@@ -36,6 +44,7 @@ class IngestionService:
         self.documents_dir.mkdir(parents=True, exist_ok=True)
         self.snapshots_dir.mkdir(parents=True, exist_ok=True)
         self.store_dir.mkdir(parents=True, exist_ok=True)
+        self.guardrails = InputGuardrails()
 
         self.chunker = DocumentChunker(
             chunk_size=chunk_size,
@@ -249,8 +258,16 @@ class IngestionService:
                     pass
             raise
 
-    def search(self, question: str, top_k: int = 3, distance_threshold: float | None = None):
+    def search(
+        self,
+        question: str,
+        top_k: int | None = None,
+        distance_threshold: float | None = None,
+    ):
         """Search the presisted index, optionally filter by L2 distance."""
+
+        question = self.guardrails.validate_question(question)
+        top_k = self.default_top_k if top_k is None else top_k
         
         if not question or not question.strip():
             raise ValueError("Question cannot be empty")
@@ -276,7 +293,7 @@ class IngestionService:
 
     def answer_question(self, 
                         question: str, 
-                        top_k: int = 3, 
+                        top_k: int | None = None, 
                         distance_threshold: float| None= None,
                         answer_mode: str = "strict"
                         ) ->dict:

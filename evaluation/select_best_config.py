@@ -1,109 +1,184 @@
 
+import argparse
 import csv
 import json
 import math
+import os
+import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 
-RESULTS_PATH = Path("evaluation_results.csv")
-CONFIG_PATH = Path("data/retrieval_config.json")
+REQUIRED_COLUMNS = {
+    "chunk_size",
+    "chunk_overlap",
+    "top_k",
+    "recall",
+    "precision",
+    "f1",
+    "hit_rate",
+}
 
 
-def as_float(row: dict, field: str) -> float:
+def parse_number(row, field):
     value = float(row[field])
 
     if not math.isfinite(value):
-        raise ValueError(f"Invalid {field} value: {value}")
+        raise ValueError(f"{field} must be finite")
 
     return value
 
 
-def select_best_config(results_path: Path = RESULTS_PATH) -> dict:
-    if not results_path.exists():
-        raise FileNotFoundError(
-            f"Could not find {results_path}. Run the retrieval experiments first."
-        )
-
-    with results_path.open("r", newline="", encoding="utf-8") as file:
-        rows = list(csv.DictReader(file))
-
-    if not rows:
-        raise ValueError("The evaluation results file is empty.")
-
+def load_candidates(csv_path):
     candidates = []
 
-    for row in rows:
-        f1 = as_float(row, "f1")
-        hit_rate = as_float(row, "hit_rate")
+    with open(csv_path, newline="", encoding="utf-8-sig") as file:
+        reader = csv.DictReader(file)
 
-        if not 0 <= f1 <= 1 or not 0 <= hit_rate <= 1:
-            raise ValueError("F1 and hit_rate must be between 0 and 1.")
+        if not reader.fieldnames:
+            raise ValueError("CSV has no header row")
 
-        candidate = {
-            "chunk_size": int(row["chunk_size"]),
-            "chunk_overlap": int(row["chunk_overlap"]),
-            "top_k": int(row["top_k"]),
-            "f1": f1,
-            "hit_rate": hit_rate,
-            "precision": as_float(row, "precision"),
-            "recall": as_float(row, "recall"),
-            "total_chunks": int(row["total_chunks"]),
-        }
+        missing = REQUIRED_COLUMNS - set(reader.fieldnames)
+        if missing:
+            raise ValueError(
+                f"CSV is missing columns: {sorted(missing)}"
+            )
 
-        if candidate["chunk_size"] <= 0:
-            raise ValueError("chunk_size must be positive.")
+        for row_number, row in enumerate(reader, start=2):
+            try:
+                chunk_size = int(row["chunk_size"])
+                chunk_overlap = int(row["chunk_overlap"])
+                top_k = int(row["top_k"])
 
-        if not 0 <= candidate["chunk_overlap"] < candidate["chunk_size"]:
-            raise ValueError("chunk_overlap must be smaller than chunk_size.")
+                recall = parse_number(row, "recall")
+                precision = parse_number(row, "precision")
+                f1 = parse_number(row, "f1")
+                hit_rate = parse_number(row, "hit_rate")
 
-        if candidate["top_k"] <= 0:
-            raise ValueError("top_k must be positive.")
+                if chunk_size <= 0 or top_k <= 0:
+                    raise ValueError(
+                        "chunk_size and top_k must be positive"
+                    )
 
-        candidate["score"] = 0.7 * f1 + 0.3 * hit_rate
-        candidates.append(candidate)
+                if not 0 <= chunk_overlap < chunk_size:
+                    raise ValueError(
+                        "chunk_overlap must be >= 0 and < chunk_size"
+                    )
 
-    # Deterministic tie-breaks: higher F1, then lower top_k.
-    candidates.sort(
+                for name, value in (
+                    ("recall", recall),
+                    ("precision", precision),
+                    ("f1", f1),
+                    ("hit_rate", hit_rate),
+                ):
+                    if not 0 <= value <= 1:
+                        raise ValueError(
+                            f"{name} must be between 0 and 1"
+                        )
+
+                candidates.append({
+                    "chunk_size": chunk_size,
+                    "chunk_overlap": chunk_overlap,
+                    "top_k": top_k,
+                    "recall": recall,
+                    "precision": precision,
+                    "f1": f1,
+                    "hit_rate": hit_rate,
+                    "csv_row": row_number,
+                })
+
+            except (ValueError, TypeError, KeyError) as exc:
+                print(f"Skipping CSV row {row_number}: {exc}")
+
+    if not candidates:
+        raise ValueError(
+            "No valid candidates found. Existing config was not changed."
+        )
+
+    return candidates
+
+
+def select_best(candidates):
+    # Primary: F1. Secondary: hit rate.
+    # Final tie-breakers make selection deterministic.
+    return max(
+        candidates,
         key=lambda item: (
-            item["score"],
             item["f1"],
-            -item["top_k"],
+            item["hit_rate"],
+            item["precision"],
+            item["recall"],
         ),
-        reverse=True,
     )
 
-    best = candidates[0]
 
-    config = {
+def write_json_atomically(output_path, payload):
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    temp_path = None
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=output_path.parent,
+            delete=False,
+        ) as temp_file:
+            temp_path = Path(temp_file.name)
+            json.dump(payload, temp_file, indent=2)
+            temp_file.write("\n")
+
+        os.replace(temp_path, output_path)
+
+    finally:
+        if temp_path and temp_path.exists():
+            temp_path.unlink()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--input",
+        default="evaluation_results.csv",
+        help="CSV produced by your retrieval experiments",
+    )
+    parser.add_argument(
+        "--output",
+        default="data/retrieval_config.json",
+        help="Where to write the selected configuration",
+    )
+    args = parser.parse_args()
+
+    candidates = load_candidates(args.input)
+    best = select_best(candidates)
+
+    payload = {
         "chunk_size": best["chunk_size"],
         "chunk_overlap": best["chunk_overlap"],
         "top_k": best["top_k"],
-        "selection_score": round(best["score"], 4),
-        "evaluation_metrics": {
-            "f1": best["f1"],
-            "hit_rate": best["hit_rate"],
-            "precision": best["precision"],
-            "recall": best["recall"],
-        },
-        "evaluation_results_file": str(results_path),
+        "selection_metric": "f1",
+        "selection_score": best["f1"],
+        "hit_rate": best["hit_rate"],
+        "precision": best["precision"],
+        "recall": best["recall"],
+        "candidate_count": len(candidates),
+        "selected_csv_row": best["csv_row"],
+        "source_csv": str(Path(args.input)),
+        "selected_at": datetime.now(timezone.utc).isoformat(),
+        "status": "candidate",
+        "notes": (
+            "Selected from supplied experiment results. "
+            "Validate on a separate holdout dataset before production use."
+        ),
     }
 
-    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    CONFIG_PATH.write_text(
-        json.dumps(config, indent=2),
-        encoding="utf-8",
-    )
+    write_json_atomically(args.output, payload)
 
-    return config
+    print("Selected retrieval configuration:")
+    print(json.dumps(payload, indent=2))
+    print(f"\nSaved to: {args.output}")
 
 
 if __name__ == "__main__":
-    selected = select_best_config()
-
-    print("Selected retrieval configuration")
-    print("-" * 40)
-
-    for key, value in selected.items():
-        print(f"{key}: {value}")
-
-    print(f"\nSaved configuration to: {CONFIG_PATH}")
+    main()

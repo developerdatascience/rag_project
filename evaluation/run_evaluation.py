@@ -7,7 +7,7 @@ from evaluation.qa_dataset import EVALUATION_CASES
 from src.ingestion_service import IngestionService
 
 from evaluation.answer_metrics import evaluate_answer
-
+from evaluation.citation_validator import validate_citations
 
 OUTPUT_DIR = Path("evaluation/reports")
 VALID_ANSWERABILITY = {"supported", "unsupported", "pending_review"}
@@ -112,6 +112,12 @@ def evaluate_case(service, case, top_k=3):
     else:
         answer = str(answer_result)
 
+    available_source_ids = set(range(1, len(sources) + 1))
+    citation_metrics = validate_citations(
+        answer,
+        available_source_ids,
+    )
+
     answer_metrics = evaluate_answer(
         answer=answer,
         answerability=answerability,
@@ -128,6 +134,7 @@ def evaluate_case(service, case, top_k=3):
         "evidence_coverage": evidence_coverage,
         "answer": answer,
         "answer_metrics": answer_metrics,
+        "citation_metrics": citation_metrics,
         "sources": sources,
     }
 
