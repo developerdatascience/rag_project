@@ -141,6 +141,34 @@ def create_app(
                     answer=answer,
                 )
 
+                source_references = []
+
+                for index, (document, _) in enumerate(
+                    results,
+                    start=1,
+                ):
+                    metadata = document.metadata or {}
+                    page = metadata.get("page")
+
+                    source_references.append({
+                        "source": metadata.get(
+                            "source",
+                            "Unknown document",
+                        ),
+                        "page": (
+                            page + 1
+                            if isinstance(page, int) and page >= 0
+                            else None
+                        ),
+                        "excerpt": document.page_content[:500],
+                        "citation_id": index,
+                    })
+
+                yield (
+                    "event: sources\n"
+                    f"data: {json.dumps({'sources': source_references})}\n\n"
+                )
+
                 yield (
                     "event: done\n"
                     f"data: {json.dumps({'session_id': request.session_id})}\n\n"

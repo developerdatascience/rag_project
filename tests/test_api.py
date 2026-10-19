@@ -1,3 +1,5 @@
+import json
+from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
@@ -35,7 +37,16 @@ class FakeRAGService:
         }
 
     def search(self, question, top_k):
-        return [("fake document", 0.2)]
+        return [(
+            SimpleNamespace(
+                metadata={
+                    "source": "understanding-the-dom.pdf",
+                    "page": 6,
+                },
+                page_content="x" * 600,
+            ),
+            0.2,
+        )]
 
 
 class FakeStreamingGenerator:
@@ -103,5 +114,24 @@ def test_stream_endpoint_emits_completion_event():
 
     assert response.status_code == 200
     assert "event: token" in response.text
+    sources_event = next(
+        event
+        for event in response.text.split("\n\n")
+        if event.startswith("event: sources\n")
+    )
+    sources_payload = json.loads(
+        sources_event.splitlines()[1][len("data: "):]
+    )
+    assert sources_payload == {
+        "sources": [{
+            "source": "understanding-the-dom.pdf",
+            "page": 7,
+            "excerpt": "x" * 500,
+            "citation_id": 1,
+        }]
+    }
     assert "event: done" in response.text
+    assert response.text.index("event: sources") < response.text.index(
+        "event: done"
+    )
     assert len(memory.turns) == 1
